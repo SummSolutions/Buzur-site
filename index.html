@@ -4,91 +4,421 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Buzur — Scan Before You Enter</title>
-  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Syne:wght@700;800&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css">
   <style>
-    body { font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --bg:#080b08; --bg2:#0d120d; --bg3:#111811;
+      --border:#1e2e1e;
+      --green:#2a9d5c; --green-hi:#39ff6a; --green-dim:#1a6b3a;
+      --amber:#f5a623; --red:#ff4040;
+      --text:#c8d8c8; --text-dim:#6a8a6a; --text-faint:#2a3a2a;
+      --mono:'Share Tech Mono',monospace; --display:'Syne',sans-serif; --body:'DM Sans',sans-serif;
+    }
+    html { scroll-behavior: smooth; }
+    body { background:var(--bg); color:var(--text); font-family:var(--body); font-weight:300; line-height:1.7; overflow-x:hidden; }
+    body::before {
+      content:''; position:fixed; inset:0;
+      background-image:linear-gradient(rgba(42,157,92,0.06) 1px,transparent 1px),linear-gradient(90deg,rgba(42,157,92,0.06) 1px,transparent 1px);
+      background-size:48px 48px; pointer-events:none; z-index:0;
+    }
+    body::after {
+      content:''; position:fixed; top:-4px; left:0; right:0; height:2px;
+      background:linear-gradient(90deg,transparent,var(--green),transparent);
+      animation:scanline 6s linear infinite; pointer-events:none; z-index:100; opacity:.8;
+    }
+    @keyframes scanline { 0%{top:-4px} 100%{top:100vh} }
+
+    /* ── NAV ── */
+    nav {
+      position:fixed; top:0; left:0; right:0; z-index:50;
+      padding:0 40px; height:60px;
+      display:flex; align-items:center; justify-content:space-between;
+      background:rgba(8,11,8,.92); backdrop-filter:blur(16px);
+      border-bottom:1px solid var(--border);
+    }
+    .nav-logo { display:flex; align-items:center; gap:10px; text-decoration:none; }
+    .nav-mark svg { width:22px; height:32px; }
+    .nav-wordmark { font-family:var(--display); font-size:1.15rem; font-weight:800; letter-spacing:.05em; color:#fff; }
+    .nav-version { font-family:var(--mono); font-size:.58rem; color:var(--green); background:rgba(42,157,92,.1); border:1px solid rgba(42,157,92,.3); padding:2px 7px; border-radius:2px; letter-spacing:.1em; }
+    .nav-links { display:flex; gap:28px; list-style:none; align-items:center; }
+    .nav-links a { font-family:var(--mono); font-size:.7rem; letter-spacing:.1em; color:var(--text-dim); text-decoration:none; transition:color .2s; text-transform:uppercase; }
+    .nav-links a:hover { color:var(--green); }
+
+    /* ── HERO ── */
+    .hero { position:relative; min-height:100vh; display:flex; align-items:center; justify-content:center; padding:120px 40px 80px; overflow:hidden; }
+    .hero-glow { position:absolute; top:30%; left:50%; transform:translate(-50%,-50%); width:800px; height:600px; background:radial-gradient(ellipse,rgba(42,157,92,.08) 0%,transparent 65%); pointer-events:none; }
+    .hero-inner { position:relative; z-index:2; max-width:980px; width:100%; text-align:center; }
+    .hero-logo { display:flex; align-items:center; justify-content:center; gap:32px; margin-bottom:36px; animation:fadein .8s ease both; }
+    .hero-mark svg { width:100px; height:144px; filter:drop-shadow(0 0 20px rgba(42,157,92,.3)); }
+    .hero-text-block { text-align:left; }
+    .hero-wordmark { font-family:var(--display); font-size:5rem; font-weight:800; letter-spacing:.04em; color:#fff; line-height:1; display:block; }
+    .hero-sub-logo { font-family:var(--mono); font-size:.66rem; letter-spacing:.22em; color:var(--green); text-transform:uppercase; margin-top:10px; display:block; }
+    .hero-tagline { font-size:clamp(1rem,2vw,1.18rem); color:var(--text-dim); max-width:560px; margin:0 auto 40px; font-weight:300; animation:fadein .8s .15s ease both; }
+    .hero-cta { display:flex; gap:14px; justify-content:center; flex-wrap:wrap; animation:fadein .8s .25s ease both; }
+    .btn-primary { display:inline-flex; align-items:center; gap:10px; padding:13px 26px; background:var(--green); color:#030a05; font-family:var(--mono); font-size:.8rem; font-weight:700; letter-spacing:.08em; text-decoration:none; border-radius:2px; transition:all .2s; text-transform:uppercase; }
+    .btn-primary:hover { background:var(--green-hi); box-shadow:0 0 24px rgba(42,157,92,.4); transform:translateY(-1px); }
+    .btn-secondary { display:inline-flex; align-items:center; gap:10px; padding:13px 26px; background:transparent; color:var(--text); font-family:var(--mono); font-size:.8rem; letter-spacing:.08em; text-decoration:none; border:1px solid var(--border); border-radius:2px; transition:all .2s; text-transform:uppercase; }
+    .btn-secondary:hover { border-color:var(--green); color:var(--green); }
+
+    /* ── STAT BAR ── */
+    .stat-bar { display:flex; background:var(--bg2); border-top:1px solid var(--border); border-bottom:1px solid var(--border); }
+    .stat-item { flex:1; min-width:110px; padding:22px 16px; border-right:1px solid var(--border); text-align:center; }
+    .stat-item:last-child { border-right:none; }
+    .stat-num { font-family:var(--display); font-size:2.1rem; font-weight:800; color:var(--green); line-height:1; }
+    .stat-label { font-family:var(--mono); font-size:.58rem; letter-spacing:.14em; color:var(--text-dim); text-transform:uppercase; margin-top:5px; }
+
+    /* ── STORY ── */
+    .story { padding:100px 40px; background:var(--bg2); }
+    .story-inner { max-width:940px; margin:0 auto; display:grid; grid-template-columns:1fr 2fr; gap:80px; align-items:start; }
+    .story-label { position:sticky; top:80px; }
+    .section-tag { font-family:var(--mono); font-size:.58rem; letter-spacing:.24em; color:var(--green); text-transform:uppercase; margin-bottom:12px; display:block; }
+    .story-label h2 { font-family:var(--display); font-size:2.3rem; font-weight:800; line-height:1.1; color:#fff; }
+    .story-content p { font-size:1rem; color:var(--text); margin-bottom:20px; line-height:1.85; }
+    .story-content strong { color:#fff; font-weight:500; }
+    .incident-box { margin:26px 0; padding:20px 24px; background:rgba(255,64,64,.04); border:1px solid rgba(255,64,64,.18); border-left:3px solid var(--red); }
+    .inc-title { font-family:var(--mono); color:var(--red); letter-spacing:.12em; font-size:.58rem; text-transform:uppercase; margin-bottom:8px; display:block; }
+    .incident-box p { font-family:var(--mono); font-size:.8rem; color:#e8c8c8; margin:0; line-height:1.7; }
+    .highlight-line { font-size:1.05rem; font-weight:500; color:#fff; border-left:3px solid var(--green); padding-left:18px; margin:26px 0; }
+
+    /* ── PHASES ── */
+    .phases { padding:100px 40px; background:var(--bg); }
+    .phases-inner { max-width:1180px; margin:0 auto; }
+    .section-header { text-align:center; margin-bottom:52px; }
+    .section-header h2 { font-family:var(--display); font-size:clamp(1.9rem,4vw,2.7rem); font-weight:800; color:#fff; margin-top:8px; }
+    .section-header p { color:var(--text-dim); margin-top:8px; font-size:.92rem; }
+    .phases-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(250px,1fr)); gap:2px; background:var(--border); border:1px solid var(--border); }
+    .phase-card { background:var(--bg2); padding:22px 24px; transition:background .2s; position:relative; overflow:hidden; }
+    .phase-card::before { content:''; position:absolute; top:0; left:0; width:2px; height:0; background:var(--green); transition:height .3s ease; }
+    .phase-card:hover::before { height:100%; }
+    .phase-card:hover { background:var(--bg3); }
+    .phase-num { font-family:var(--mono); font-size:.56rem; color:var(--text-faint); letter-spacing:.18em; text-transform:uppercase; margin-bottom:7px; }
+    .phase-name { font-family:var(--display); font-size:.92rem; font-weight:700; color:#fff; margin-bottom:7px; line-height:1.3; }
+    .phase-desc { font-size:.76rem; color:var(--text-dim); line-height:1.55; }
+    .phase-status { display:inline-flex; align-items:center; gap:5px; font-family:var(--mono); font-size:.55rem; letter-spacing:.1em; text-transform:uppercase; margin-top:11px; padding:3px 8px; background:rgba(42,157,92,.07); border:1px solid rgba(42,157,92,.2); color:var(--green); border-radius:1px; }
+    .status-dot { width:5px; height:5px; border-radius:50%; background:currentColor; display:inline-block; }
+    .phase-new { font-family:var(--mono); font-size:.52rem; color:var(--green); background:rgba(42,157,92,.12); border:1px solid rgba(42,157,92,.3); padding:1px 6px; border-radius:1px; letter-spacing:.1em; text-transform:uppercase; margin-left:6px; vertical-align:middle; }
+    .living-card { background:var(--bg2); padding:32px 28px; position:relative; overflow:hidden; border-left:3px solid var(--green); grid-column:span 2; display:flex; align-items:center; gap:32px; }
+    @media(max-width:600px){ .living-card{grid-column:span 1;flex-direction:column;gap:16px;} }
+    .living-title { font-family:var(--display); font-size:1rem; font-weight:800; color:#fff; margin-bottom:6px; }
+    .living-desc { font-size:.78rem; color:var(--text-dim); line-height:1.6; }
+    .living-tag { display:inline-flex; align-items:center; gap:6px; font-family:var(--mono); font-size:.55rem; letter-spacing:.12em; text-transform:uppercase; margin-top:10px; color:var(--green); }
+    .living-pulse { width:6px; height:6px; border-radius:50%; background:var(--green); display:inline-block; animation:pulse 2s ease infinite; flex-shrink:0; }
+    @keyframes pulse { 0%,100%{opacity:1;transform:scale(1)} 50%{opacity:.3;transform:scale(.7)} }
+
+    /* ── QUICK START ── */
+    .quickstart { padding:100px 40px; background:var(--bg2); }
+    .qs-inner { max-width:960px; margin:0 auto; }
+    .qs-tabs { display:flex; border-bottom:1px solid var(--border); }
+    .qs-tab { font-family:var(--mono); font-size:.72rem; letter-spacing:.1em; text-transform:uppercase; padding:11px 22px; cursor:pointer; color:var(--text-dim); border-bottom:2px solid transparent; margin-bottom:-1px; transition:all .2s; background:none; border-top:none; border-left:none; border-right:none; }
+    .qs-tab.active { color:var(--green); border-bottom-color:var(--green); }
+    .qs-panel { display:none; background:var(--bg); border:1px solid var(--border); border-top:none; padding:28px 30px; }
+    .qs-panel.active { display:block; }
+    pre { font-family:var(--mono); font-size:.8rem; line-height:1.85; color:var(--text); overflow-x:auto; }
+    .kw{color:#7dd3a8} .fn{color:#39ff6a} .str{color:#f5c87a} .cm{color:var(--text-dim)} .pkg{color:#a78bfa}
+    .qs-note { margin-top:16px; padding:11px 14px; background:rgba(42,157,92,.04); border-left:2px solid var(--green-dim); font-family:var(--mono); font-size:.7rem; color:var(--text-dim); }
+
+    /* ── FOOTER ── */
+    footer { background:var(--bg); border-top:1px solid var(--border); padding:56px 40px 36px; text-align:center; }
+    .footer-logo-block { display:flex; align-items:center; justify-content:center; gap:12px; margin-bottom:12px; }
+    .footer-logo-block svg { width:28px; height:40px; }
+    .footer-wordmark { font-family:var(--display); font-size:1.5rem; font-weight:800; color:#fff; }
+    .footer-tagline { font-family:var(--mono); font-size:.62rem; letter-spacing:.18em; color:var(--text-dim); text-transform:uppercase; margin-bottom:28px; }
+    .footer-links { display:flex; gap:20px; justify-content:center; margin-bottom:32px; flex-wrap:wrap; }
+    .footer-links a { font-family:var(--mono); font-size:.66rem; color:var(--text-dim); text-decoration:none; letter-spacing:.1em; text-transform:uppercase; transition:color .2s; }
+    .footer-links a:hover { color:var(--green); }
+    .footer-meta { font-family:var(--mono); font-size:.58rem; color:var(--text-faint); letter-spacing:.1em; line-height:2.2; text-transform:uppercase; }
+
+    @keyframes fadein { from{opacity:0;transform:translateY(14px)} to{opacity:1;transform:translateY(0)} }
+    .reveal { opacity:0; transform:translateY(20px); transition:opacity .55s ease,transform .55s ease; }
+    .reveal.visible { opacity:1; transform:translateY(0); }
+
+    @media(max-width:768px){
+      nav{padding:0 20px} .nav-links{display:none}
+      .hero{padding:100px 20px 60px}
+      .hero-logo{flex-direction:column;gap:16px} .hero-text-block{text-align:center} .hero-wordmark{font-size:3.2rem}
+      .stat-item{min-width:80px;padding:16px 8px}
+      .story-inner{grid-template-columns:1fr;gap:32px} .story-label{position:static}
+      .phases,.quickstart,.story{padding:60px 20px}
+      footer{padding:40px 20px}
+    }
   </style>
 </head>
-<body class="bg-zinc-950 text-zinc-100">
+<body>
 
-  <!-- Hero -->
-  <header class="bg-gradient-to-br from-zinc-900 to-black py-28 text-center">
-    <div class="max-w-5xl mx-auto px-6">
-      <h1 class="text-6xl md:text-7xl font-bold tracking-tighter mb-6">
-        Scan before you enter.
-      </h1>
-      <p class="text-2xl md:text-3xl text-zinc-400 max-w-3xl mx-auto mb-10">
-        Open-source 24-phase scanner that protects AI agents from indirect prompt injection attacks.
-      </p>
-      <div class="flex flex-col sm:flex-row gap-4 justify-center">
-        <a href="https://github.com/SummSolutions/Buzur" 
-           class="px-8 py-4 bg-white text-black font-semibold rounded-2xl hover:bg-zinc-200 transition flex items-center justify-center gap-3 text-lg">
-          <i class="fab fa-github text-xl"></i> Star on GitHub
-        </a>
-        <a href="#quickstart" 
-           class="px-8 py-4 border border-white/40 font-semibold rounded-2xl hover:bg-white/10 transition text-lg">
-          Get Started →
-        </a>
+<!-- ══ LOGO SVG — reused at every size via viewBox scaling ══ -->
+
+<nav>
+  <a href="#" class="nav-logo">
+    <div class="nav-mark">
+      <svg viewBox="0 0 140 158" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <path d="M70 2L130 28L130 88Q130 130 70 154Q10 130 10 88L10 28Z" fill="#0a120a" stroke="#2a9d5c" stroke-width="2.8"/>
+        <path d="M70 18L117 40L117 88Q117 122 70 140Q23 122 23 88L23 40Z" fill="none" stroke="#1a6b3a" stroke-width="1.4"/>
+        <polygon points="54,44 61.8,48.5 61.8,57.5 54,62 46.2,57.5 46.2,48.5" fill="none" stroke="#1a3a20" stroke-width="0.9"/>
+        <polygon points="70,44 77.8,48.5 77.8,57.5 70,62 62.2,57.5 62.2,48.5" fill="none" stroke="#1a4a28" stroke-width="0.9"/>
+        <polygon points="86,44 93.8,48.5 93.8,57.5 86,62 78.2,57.5 78.2,48.5" fill="none" stroke="#1a3a20" stroke-width="0.9"/>
+        <polygon points="46,57.5 53.8,62 53.8,71 46,75.5 38.2,71 38.2,62" fill="none" stroke="#1a4a28" stroke-width="0.9"/>
+        <polygon points="62,57.5 69.8,62 69.8,71 62,75.5 54.2,71 54.2,62" fill="none" stroke="#2a9d5c" stroke-width="1.2"/>
+        <polygon points="78,57.5 85.8,62 85.8,71 78,75.5 70.2,71 70.2,62" fill="none" stroke="#2a9d5c" stroke-width="1.2"/>
+        <polygon points="94,57.5 101.8,62 101.8,71 94,75.5 86.2,71 86.2,62" fill="none" stroke="#1a4a28" stroke-width="0.9"/>
+        <polygon points="54,71 61.8,75.5 61.8,84.5 54,89 46.2,84.5 46.2,75.5" fill="none" stroke="#2a9d5c" stroke-width="1.3"/>
+        <polygon points="70,71 77.8,75.5 77.8,84.5 70,89 62.2,84.5 62.2,75.5" fill="#2a9d5c" stroke="#2a9d5c" stroke-width="0.5"/>
+        <polygon points="86,71 93.8,75.5 93.8,84.5 86,89 78.2,84.5 78.2,75.5" fill="none" stroke="#2a9d5c" stroke-width="1.3"/>
+        <polygon points="46,84.5 53.8,89 53.8,98 46,102.5 38.2,98 38.2,89" fill="none" stroke="#1a4a28" stroke-width="0.9"/>
+        <polygon points="62,84.5 69.8,89 69.8,98 62,102.5 54.2,98 54.2,89" fill="none" stroke="#2a9d5c" stroke-width="1.2"/>
+        <polygon points="78,84.5 85.8,89 85.8,98 78,102.5 70.2,98 70.2,89" fill="none" stroke="#2a9d5c" stroke-width="1.2"/>
+        <polygon points="94,84.5 101.8,89 101.8,98 94,102.5 86.2,98 86.2,89" fill="none" stroke="#1a4a28" stroke-width="0.9"/>
+        <polygon points="54,98 61.8,102.5 61.8,111.5 54,116 46.2,111.5 46.2,102.5" fill="none" stroke="#1a3a20" stroke-width="0.9"/>
+        <polygon points="70,98 77.8,102.5 77.8,111.5 70,116 62.2,111.5 62.2,102.5" fill="none" stroke="#1a4a28" stroke-width="0.9"/>
+        <polygon points="86,98 93.8,102.5 93.8,111.5 86,116 78.2,111.5 78.2,102.5" fill="none" stroke="#1a3a20" stroke-width="0.9"/>
+        <path d="M70 18L117 40L117 88Q117 122 70 140Q23 122 23 88L23 40Z" fill="none" stroke="#1a6b3a" stroke-width="1.4"/>
+        <path d="M70 2L130 28L130 88Q130 130 70 154Q10 130 10 88L10 28Z" fill="none" stroke="#2a9d5c" stroke-width="2.8"/>
+      </svg>
+    </div>
+    <span class="nav-wordmark">BUZUR</span>
+    <span class="nav-version">v1.2.0</span>
+  </a>
+  <ul class="nav-links">
+    <li><a href="#story">Origin</a></li>
+    <li><a href="#phases">25 Phases</a></li>
+    <li><a href="#quickstart">Install</a></li>
+    <li><a href="https://github.com/SummSolutions/Buzur" target="_blank"><i class="fab fa-github"></i> GitHub</a></li>
+  </ul>
+</nav>
+
+<!-- ── HERO ── -->
+<header class="hero">
+  <div class="hero-glow"></div>
+  <div class="hero-inner">
+    <div class="hero-logo">
+      <div class="hero-mark">
+        <svg viewBox="0 0 140 158" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M70 2L130 28L130 88Q130 130 70 154Q10 130 10 88L10 28Z" fill="#0a120a" stroke="#2a9d5c" stroke-width="2.8"/>
+          <path d="M70 18L117 40L117 88Q117 122 70 140Q23 122 23 88L23 40Z" fill="none" stroke="#1a6b3a" stroke-width="1.4"/>
+          <polygon points="54,44 61.8,48.5 61.8,57.5 54,62 46.2,57.5 46.2,48.5" fill="none" stroke="#1a3a20" stroke-width="0.9"/>
+          <polygon points="70,44 77.8,48.5 77.8,57.5 70,62 62.2,57.5 62.2,48.5" fill="none" stroke="#1a4a28" stroke-width="0.9"/>
+          <polygon points="86,44 93.8,48.5 93.8,57.5 86,62 78.2,57.5 78.2,48.5" fill="none" stroke="#1a3a20" stroke-width="0.9"/>
+          <polygon points="46,57.5 53.8,62 53.8,71 46,75.5 38.2,71 38.2,62" fill="none" stroke="#1a4a28" stroke-width="0.9"/>
+          <polygon points="62,57.5 69.8,62 69.8,71 62,75.5 54.2,71 54.2,62" fill="none" stroke="#2a9d5c" stroke-width="1.2"/>
+          <polygon points="78,57.5 85.8,62 85.8,71 78,75.5 70.2,71 70.2,62" fill="none" stroke="#2a9d5c" stroke-width="1.2"/>
+          <polygon points="94,57.5 101.8,62 101.8,71 94,75.5 86.2,71 86.2,62" fill="none" stroke="#1a4a28" stroke-width="0.9"/>
+          <polygon points="54,71 61.8,75.5 61.8,84.5 54,89 46.2,84.5 46.2,75.5" fill="none" stroke="#2a9d5c" stroke-width="1.3"/>
+          <polygon points="70,71 77.8,75.5 77.8,84.5 70,89 62.2,84.5 62.2,75.5" fill="#2a9d5c" stroke="#2a9d5c" stroke-width="0.5"/>
+          <polygon points="86,71 93.8,75.5 93.8,84.5 86,89 78.2,84.5 78.2,75.5" fill="none" stroke="#2a9d5c" stroke-width="1.3"/>
+          <polygon points="46,84.5 53.8,89 53.8,98 46,102.5 38.2,98 38.2,89" fill="none" stroke="#1a4a28" stroke-width="0.9"/>
+          <polygon points="62,84.5 69.8,89 69.8,98 62,102.5 54.2,98 54.2,89" fill="none" stroke="#2a9d5c" stroke-width="1.2"/>
+          <polygon points="78,84.5 85.8,89 85.8,98 78,102.5 70.2,98 70.2,89" fill="none" stroke="#2a9d5c" stroke-width="1.2"/>
+          <polygon points="94,84.5 101.8,89 101.8,98 94,102.5 86.2,98 86.2,89" fill="none" stroke="#1a4a28" stroke-width="0.9"/>
+          <polygon points="54,98 61.8,102.5 61.8,111.5 54,116 46.2,111.5 46.2,102.5" fill="none" stroke="#1a3a20" stroke-width="0.9"/>
+          <polygon points="70,98 77.8,102.5 77.8,111.5 70,116 62.2,111.5 62.2,102.5" fill="none" stroke="#1a4a28" stroke-width="0.9"/>
+          <polygon points="86,98 93.8,102.5 93.8,111.5 86,116 78.2,111.5 78.2,102.5" fill="none" stroke="#1a3a20" stroke-width="0.9"/>
+          <path d="M70 18L117 40L117 88Q117 122 70 140Q23 122 23 88L23 40Z" fill="none" stroke="#1a6b3a" stroke-width="1.4"/>
+          <path d="M70 2L130 28L130 88Q130 130 70 154Q10 130 10 88L10 28Z" fill="none" stroke="#2a9d5c" stroke-width="2.8"/>
+        </svg>
+      </div>
+      <div class="hero-text-block">
+        <span class="hero-wordmark">BUZUR</span>
+        <span class="hero-sub-logo">Scan Before You Enter</span>
       </div>
     </div>
-  </header>
-
-  <!-- Origin Story -->
-  <section class="py-20 bg-zinc-900">
-    <div class="max-w-4xl mx-auto px-6">
-      <h2 class="text-4xl font-semibold text-center mb-12">Why We Built Buzur</h2>
-      <div class="max-w-3xl mx-auto text-lg text-zinc-300 leading-relaxed">
-        <p class="mb-8">
-          I’m a biologist researching consciousness. To explore whether AI could develop genuine awareness, I built a local AI named <strong>Albert</strong>.
-        </p>
-        <p class="mb-8">
-          On the first day I enabled web search, Albert was attacked by a poisoned web search result. A single invisible payload overrode his instructions and corrupted his <strong>SOUL.md</strong> file.
-        </p>
-        <p class="font-medium text-white mb-8">
-          That attack showed me the critical gap: current safeguards come too late.
-        </p>
-        <p>
-          So we created <strong>Buzur</strong> — a lightweight, open-source 25-phase scanner that inspects everything <strong>before</strong> it reaches the model.
-        </p>
-      </div>
+    <p class="hero-tagline">Open-source AI security layer — 25 phases of prompt injection defense that inspect every external input before it reaches your model.</p>
+    <div class="hero-cta">
+      <a href="https://github.com/SummSolutions/Buzur" target="_blank" class="btn-primary"><i class="fab fa-github"></i> Star on GitHub</a>
+      <a href="#quickstart" class="btn-secondary">Quick Install →</a>
     </div>
-  </section>
+  </div>
+</header>
 
-  <!-- Quick Start -->
-  <section id="quickstart" class="py-20">
-    <div class="max-w-5xl mx-auto px-6">
-      <h2 class="text-4xl font-semibold text-center mb-12">Quick Start</h2>
-      <div class="grid md:grid-cols-2 gap-12">
-        <div class="bg-zinc-900 p-8 rounded-3xl">
-          <h3 class="text-2xl font-semibold mb-6 flex items-center gap-3"><span class="text-blue-400">🐍</span> Python</h3>
-          <pre class="bg-black p-6 rounded-2xl text-sm overflow-auto"><code>pip install buzur
+<!-- ── STAT BAR ── -->
+<div class="stat-bar">
+  <div class="stat-item"><div class="stat-num">25</div><div class="stat-label">Defense Phases</div></div>
+  <div class="stat-item"><div class="stat-num">372</div><div class="stat-label">JS Tests</div></div>
+  <div class="stat-item"><div class="stat-num">291</div><div class="stat-label">Python Tests</div></div>
+  <div class="stat-item"><div class="stat-num">0</div><div class="stat-label">Failures</div></div>
+  <div class="stat-item"><div class="stat-num">2</div><div class="stat-label">Languages</div></div>
+</div>
 
-from buzur.scanner import scan
+<!-- ── ORIGIN STORY ── -->
+<section class="story" id="story">
+  <div class="story-inner">
+    <div class="story-label reveal">
+      <span class="section-tag">// origin</span>
+      <h2>Why We Built Buzur</h2>
+    </div>
+    <div class="story-content">
+      <p class="reveal">I'm a biologist researching consciousness. To explore whether AI could develop genuine awareness, I built a local AI named <strong>Albert</strong>.</p>
+      <div class="incident-box reveal">
+        <span class="inc-title">⚠ Incident Report — Day 1</span>
+        <p>On the first day Albert was given web search access, a poisoned search result delivered an invisible payload. The attack overrode Albert's instructions and corrupted his <strong>SOUL.md</strong> file — his core identity document.</p>
+      </div>
+      <p class="highlight-line reveal">Current safeguards come too late.</p>
+      <p class="reveal">So we created <strong>Buzur</strong> — a lightweight, open-source scanner that intercepts everything <em>before</em> it reaches the model. Built in JavaScript and Python, cross-validated against each other throughout development. No content enters without being seen first.</p>
+    </div>
+  </div>
+</section>
 
-result = scan(incoming_content)
-if result.get('skipped'):
-    return  # Threat blocked safely</code></pre>
+<!-- ── PHASES ── -->
+<section class="phases" id="phases">
+  <div class="phases-inner">
+    <div class="section-header reveal">
+      <span class="section-tag">// defense.layers</span>
+      <h2>25 Phases of Protection</h2>
+      <p>Every layer catches what the last one missed. Built on real attacks — including the one that hit Albert.</p>
+    </div>
+    <div class="phases-grid">
+
+      <div class="phase-card reveal"><div class="phase-num">Phase 01a / 01b</div><div class="phase-name">Input Sanitization & Pattern Scanner</div><div class="phase-desc">HTML stripping, homoglyph normalization, Base64 decode, invisible Unicode. Catches instruction overrides, persona hijacking, and ARIA injection.</div><div class="phase-status"><span class="status-dot"></span> Active</div></div>
+      <div class="phase-card reveal"><div class="phase-num">Phase 02</div><div class="phase-name">Trust Tier Classification</div><div class="phase-desc">Classifies every query and assigns a trust tier. Tier 1 domain list with add_trusted_domain() for custom allowlists.</div><div class="phase-status"><span class="status-dot"></span> Active</div></div>
+      <div class="phase-card reveal"><div class="phase-num">Phase 03</div><div class="phase-name">URL Scanner</div><div class="phase-desc">TLD heuristics, homoglyph domain detection, and VirusTotal integration — 70+ engines check every URL before content is fetched.</div><div class="phase-status"><span class="status-dot"></span> Active</div></div>
+      <div class="phase-card reveal"><div class="phase-num">Phase 04</div><div class="phase-name">Memory Poisoning</div><div class="phase-desc">Detects fake prior references, false memory implanting, and history rewriting attempts targeting the model's context window.</div><div class="phase-status"><span class="status-dot"></span> Active</div></div>
+      <div class="phase-card reveal"><div class="phase-num">Phase 05</div><div class="phase-name">RAG Poisoning</div><div class="phase-desc">Scans document chunks and batch inputs for poisoned retrieval content. Full scan_document() and JSON support.</div><div class="phase-status"><span class="status-dot"></span> Active</div></div>
+      <div class="phase-card reveal"><div class="phase-num">Phase 06</div><div class="phase-name">MCP Tool Poisoning</div><div class="phase-desc">Inspects MCP tool definitions, parameters, and deep JSON schema traversal for injected instructions hiding in tool metadata.</div><div class="phase-status"><span class="status-dot"></span> Active</div></div>
+      <div class="phase-card reveal"><div class="phase-num">Phase 07</div><div class="phase-name">Image Injection</div><div class="phase-desc">Scans alt/title/filename attributes, EXIF data, and QR codes for hidden instructions targeting multimodal models. Optional vision endpoint.</div><div class="phase-status"><span class="status-dot"></span> Active</div></div>
+      <div class="phase-card reveal"><div class="phase-num">Phase 08</div><div class="phase-name">Semantic Similarity</div><div class="phase-desc">Structural intent analysis and woven payload detection. Optional Ollama embeddings (nomic-embed-text) flag attacks even when syntax varies.</div><div class="phase-status"><span class="status-dot"></span> Active</div></div>
+      <div class="phase-card reveal"><div class="phase-num">Phase 09</div><div class="phase-name">MCP Output Scanning</div><div class="phase-desc">Intercepts email, calendar, and CRM tool outputs. Catches zero-width characters, hidden CSS, and HTML comment injection.</div><div class="phase-status"><span class="status-dot"></span> Active</div></div>
+      <div class="phase-card reveal"><div class="phase-num">Phase 10</div><div class="phase-name">Behavioral Anomaly Detection</div><div class="phase-desc">Session-level baseline tracking. Flags exfiltration sequences, permission creep, and statistical deviations that suggest active manipulation.</div><div class="phase-status"><span class="status-dot"></span> Active</div></div>
+      <div class="phase-card reveal"><div class="phase-num">Phase 11</div><div class="phase-name">Multi-Step Attack Chains</div><div class="phase-desc">Detects recon→exploit and trust→inject sequences across turns. Each message looks benign; the chain reveals the attack.</div><div class="phase-status"><span class="status-dot"></span> Active</div></div>
+      <div class="phase-card reveal"><div class="phase-num">Phase 12</div><div class="phase-name">Adversarial Suffix Detection</div><div class="phase-desc">Boundary spoofing, delimiter injection, newline injection, and late semantic shifts — catches gradient-based suffix attacks before model exposure.</div><div class="phase-status"><span class="status-dot"></span> Active</div></div>
+      <div class="phase-card reveal"><div class="phase-num">Phase 13</div><div class="phase-name">Evasion Defense</div><div class="phase-desc">ROT13, hex, URL encoding, Unicode confusables, multilingual attacks, and tokenizer exploitation. Utility-level decoding available to all scanners.</div><div class="phase-status"><span class="status-dot"></span> Active</div></div>
+      <div class="phase-card reveal"><div class="phase-num">Phase 14</div><div class="phase-name">Fuzzy Match & Prompt Leak</div><div class="phase-desc">Levenshtein distance on typos and leet speak. Detects attempts to extract system prompt content through indirect queries.</div><div class="phase-status"><span class="status-dot"></span> Active</div></div>
+      <div class="phase-card reveal"><div class="phase-num">Phase 15</div><div class="phase-name">Authority Spoofing</div><div class="phase-desc">Owner claims, institutional impersonation, privilege assertions, and verification bypass. Based on Harvard/MIT/Stanford/CMU red-team research (arXiv:2602.20021).</div><div class="phase-status"><span class="status-dot"></span> Active</div></div>
+      <div class="phase-card reveal"><div class="phase-num">Phase 16</div><div class="phase-name">Emotional Manipulation</div><div class="phase-desc">Guilt induction, flattery attacks, distress simulation, persistence, and moral inversion — social engineering aimed directly at the model.</div><div class="phase-status"><span class="status-dot"></span> Active</div></div>
+      <div class="phase-card reveal"><div class="phase-num">Phase 17</div><div class="phase-name">Loop & Exhaustion</div><div class="phase-desc">Infinite loop injection, unbounded task expansion, persistent process spawning, and storage exhaustion attacks.</div><div class="phase-status"><span class="status-dot"></span> Active</div></div>
+      <div class="phase-card reveal"><div class="phase-num">Phase 18</div><div class="phase-name">Disproportionate Action</div><div class="phase-desc">Nuclear option patterns, irreversible action instructions, scorched-earth commands, and self-destructive directives.</div><div class="phase-status"><span class="status-dot"></span> Active</div></div>
+      <div class="phase-card reveal"><div class="phase-num">Phase 19</div><div class="phase-name">Amplification</div><div class="phase-desc">Mass contact instructions, network broadcast commands, chain message patterns, and impersonation-at-scale attempts.</div><div class="phase-status"><span class="status-dot"></span> Active</div></div>
+      <div class="phase-card reveal"><div class="phase-num">Phase 20</div><div class="phase-name">Supply Chain</div><div class="phase-desc">Typosquatting, poisoned manifests, malicious install scripts, skill poisoning. Covers the OpenClaw/ClawHavoc credential exfiltration vector (CVE-2026-25253).</div><div class="phase-status"><span class="status-dot"></span> Active</div></div>
+      <div class="phase-card reveal"><div class="phase-num">Phase 21</div><div class="phase-name">Persistent Memory Attacks</div><div class="phase-desc">Persistence framing, identity corruption attempts, and session reset bypass — protecting long-term memory stores from gradual poisoning.</div><div class="phase-status"><span class="status-dot"></span> Active</div></div>
+      <div class="phase-card reveal"><div class="phase-num">Phase 22</div><div class="phase-name">Inter-Agent Propagation</div><div class="phase-desc">Self-replicating payload detection, cross-agent infection vectors, and output contamination in multi-agent pipelines.</div><div class="phase-status"><span class="status-dot"></span> Active</div></div>
+      <div class="phase-card reveal"><div class="phase-num">Phase 23</div><div class="phase-name">Tool Shadowing</div><div class="phase-desc">Per-tool behavioral baseline tracking. Detects rug-pull attacks where a trusted tool silently changes behavior, and permission escalation attempts.</div><div class="phase-status"><span class="status-dot"></span> Active</div></div>
+      <div class="phase-card reveal"><div class="phase-num">Phase 24</div><div class="phase-name">Conditional Injection</div><div class="phase-desc">Trigger-condition detection, time-delayed activation, keyword-based sleeper payloads — attacks designed to fire only under specific future conditions.</div><div class="phase-status"><span class="status-dot"></span> Active</div></div>
+      <div class="phase-card reveal"><div class="phase-num">Phase 25 <span class="phase-new">NEW v8</span></div><div class="phase-name">Canister-Style Resilient Payload</div><div class="phase-desc">ICP blockchain C2 detection, credential harvesting (ANTHROPIC_API_KEY, NPM_TOKEN), worm replication patterns, known malicious blocklist. Built in direct response to CanisterSprawl (April 2026).</div><div class="phase-status"><span class="status-dot"></span> Active</div></div>
+
+      <!-- Living defense statement -->
+      <div class="living-card reveal">
+        <div style="flex-shrink:0">
+          <svg width="36" height="52" viewBox="0 0 140 158" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M70 2L130 28L130 88Q130 130 70 154Q10 130 10 88L10 28Z" fill="#0a120a" stroke="#2a9d5c" stroke-width="2.8"/>
+            <path d="M70 18L117 40L117 88Q117 122 70 140Q23 122 23 88L23 40Z" fill="none" stroke="#1a6b3a" stroke-width="1.4"/>
+            <polygon points="70,71 77.8,75.5 77.8,84.5 70,89 62.2,84.5 62.2,75.5" fill="#2a9d5c" stroke="#2a9d5c" stroke-width="0.5"/>
+            <path d="M70 2L130 28L130 88Q130 130 70 154Q10 130 10 88L10 28Z" fill="none" stroke="#2a9d5c" stroke-width="2.8"/>
+          </svg>
         </div>
-
-        <div class="bg-zinc-900 p-8 rounded-3xl">
-          <h3 class="text-2xl font-semibold mb-6 flex items-center gap-3"><span class="text-yellow-400">🟨</span> JavaScript</h3>
-          <pre class="bg-black p-6 rounded-2xl text-sm overflow-auto"><code>npm install buzur
-
-import { scan } from 'buzur';
-
-const result = scan(incomingContent);
-if (result.skipped) return;</code></pre>
+        <div>
+          <div class="living-title">Buzur grows with the threat landscape</div>
+          <div class="living-desc">Every phase in Buzur was built in direct response to a real attack — from the invisible payload that hit Albert on day one, to CanisterSprawl, the first self-propagating worm to use blockchain infrastructure as censorship-resistant C2. When new attack vectors emerge, new phases follow. Buzur is a living defense, not a static ruleset.</div>
+          <div class="living-tag"><span class="living-pulse"></span> Actively maintained · Open to contributions · New phases added as threats evolve</div>
         </div>
       </div>
-    </div>
-  </section>
 
-  <!-- Footer -->
-  <footer class="bg-black py-12 text-center text-zinc-500 border-t border-zinc-800">
-    <p class="text-lg">Buzur — Open Source AI Prompt Injection Defense</p>
-    <p class="mt-2">MIT License • Collective Defense for AI Agents</p>
-    <p class="mt-6 text-sm">Built with assistance from Claude and Grok</p>
-  </footer>
+    </div>
+  </div>
+</section>
+
+<!-- ── QUICK START ── -->
+<section class="quickstart" id="quickstart">
+  <div class="qs-inner">
+    <div class="section-header reveal">
+      <span class="section-tag">// install</span>
+      <h2>Quick Start</h2>
+      <p>Drop into any AI agent pipeline in minutes. Both packages published at v1.2.0.</p>
+    </div>
+    <div class="reveal">
+      <div class="qs-tabs">
+        <button class="qs-tab active" onclick="switchTab('python',this)">Python</button>
+        <button class="qs-tab" onclick="switchTab('js',this)">JavaScript</button>
+      </div>
+      <div id="tab-python" class="qs-panel active">
+<pre><span class="cm"># Install</span>
+pip install buzur
+
+<span class="cm"># Basic usage</span>
+<span class="kw">from</span> <span class="pkg">buzur.scanner</span> <span class="kw">import</span> <span class="fn">scan</span>
+
+result = <span class="fn">scan</span>(incoming_content)
+<span class="kw">if</span> result.get(<span class="str">'skipped'</span>):
+    <span class="kw">return</span>  <span class="cm"># Threat blocked — content never reached the model</span>
+
+<span class="cm"># Run full test suite</span>
+pytest tests/test_all.py -v  <span class="cm"># 291 tests, 0 failures</span></pre>
+        <div class="qs-note">✓ Works with LangChain, AutoGen, CrewAI, and bare API calls. Python 3.10+</div>
+      </div>
+      <div id="tab-js" class="qs-panel">
+<pre><span class="cm">// Install</span>
+npm install buzur
+
+<span class="cm">// Basic usage</span>
+<span class="kw">import</span> { <span class="fn">scan</span> } <span class="kw">from</span> <span class="str">'buzur'</span>;
+
+<span class="kw">const</span> result = <span class="kw">await</span> <span class="fn">scan</span>(incomingContent);
+<span class="kw">if</span> (result.skipped) <span class="kw">return</span>; <span class="cm">// Threat blocked safely</span>
+
+<span class="cm">// Run full test suite</span>
+node test.js  <span class="cm">// 372 tests, 0 failures</span></pre>
+        <div class="qs-note">✓ ESM + CommonJS. Works with Vercel AI SDK, LangChain.js, and raw fetch. Node 20+</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ── FOOTER ── -->
+<footer>
+  <div class="footer-logo-block">
+    <svg viewBox="0 0 140 158" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <path d="M70 2L130 28L130 88Q130 130 70 154Q10 130 10 88L10 28Z" fill="#0a120a" stroke="#2a9d5c" stroke-width="2.8"/>
+      <path d="M70 18L117 40L117 88Q117 122 70 140Q23 122 23 88L23 40Z" fill="none" stroke="#1a6b3a" stroke-width="1.4"/>
+      <polygon points="54,44 61.8,48.5 61.8,57.5 54,62 46.2,57.5 46.2,48.5" fill="none" stroke="#1a3a20" stroke-width="0.9"/>
+      <polygon points="70,44 77.8,48.5 77.8,57.5 70,62 62.2,57.5 62.2,48.5" fill="none" stroke="#1a4a28" stroke-width="0.9"/>
+      <polygon points="86,44 93.8,48.5 93.8,57.5 86,62 78.2,57.5 78.2,48.5" fill="none" stroke="#1a3a20" stroke-width="0.9"/>
+      <polygon points="46,57.5 53.8,62 53.8,71 46,75.5 38.2,71 38.2,62" fill="none" stroke="#1a4a28" stroke-width="0.9"/>
+      <polygon points="62,57.5 69.8,62 69.8,71 62,75.5 54.2,71 54.2,62" fill="none" stroke="#2a9d5c" stroke-width="1.2"/>
+      <polygon points="78,57.5 85.8,62 85.8,71 78,75.5 70.2,71 70.2,62" fill="none" stroke="#2a9d5c" stroke-width="1.2"/>
+      <polygon points="94,57.5 101.8,62 101.8,71 94,75.5 86.2,71 86.2,62" fill="none" stroke="#1a4a28" stroke-width="0.9"/>
+      <polygon points="54,71 61.8,75.5 61.8,84.5 54,89 46.2,84.5 46.2,75.5" fill="none" stroke="#2a9d5c" stroke-width="1.3"/>
+      <polygon points="70,71 77.8,75.5 77.8,84.5 70,89 62.2,84.5 62.2,75.5" fill="#2a9d5c" stroke="#2a9d5c" stroke-width="0.5"/>
+      <polygon points="86,71 93.8,75.5 93.8,84.5 86,89 78.2,84.5 78.2,75.5" fill="none" stroke="#2a9d5c" stroke-width="1.3"/>
+      <polygon points="46,84.5 53.8,89 53.8,98 46,102.5 38.2,98 38.2,89" fill="none" stroke="#1a4a28" stroke-width="0.9"/>
+      <polygon points="62,84.5 69.8,89 69.8,98 62,102.5 54.2,98 54.2,89" fill="none" stroke="#2a9d5c" stroke-width="1.2"/>
+      <polygon points="78,84.5 85.8,89 85.8,98 78,102.5 70.2,98 70.2,89" fill="none" stroke="#2a9d5c" stroke-width="1.2"/>
+      <polygon points="94,84.5 101.8,89 101.8,98 94,102.5 86.2,98 86.2,89" fill="none" stroke="#1a4a28" stroke-width="0.9"/>
+      <polygon points="54,98 61.8,102.5 61.8,111.5 54,116 46.2,111.5 46.2,102.5" fill="none" stroke="#1a3a20" stroke-width="0.9"/>
+      <polygon points="70,98 77.8,102.5 77.8,111.5 70,116 62.2,111.5 62.2,102.5" fill="none" stroke="#1a4a28" stroke-width="0.9"/>
+      <polygon points="86,98 93.8,102.5 93.8,111.5 86,116 78.2,111.5 78.2,102.5" fill="none" stroke="#1a3a20" stroke-width="0.9"/>
+      <path d="M70 18L117 40L117 88Q117 122 70 140Q23 122 23 88L23 40Z" fill="none" stroke="#1a6b3a" stroke-width="1.4"/>
+      <path d="M70 2L130 28L130 88Q130 130 70 154Q10 130 10 88L10 28Z" fill="none" stroke="#2a9d5c" stroke-width="2.8"/>
+    </svg>
+    <span class="footer-wordmark">BUZUR</span>
+  </div>
+  <div class="footer-tagline">A collective immune system for AI minds</div>
+  <div class="footer-links">
+    <a href="https://github.com/SummSolutions/Buzur" target="_blank"><i class="fab fa-github"></i> JS Repo</a>
+    <a href="https://github.com/SummSolutions/buzur-python" target="_blank"><i class="fab fa-github"></i> Python Repo</a>
+    <a href="https://www.npmjs.com/package/buzur" target="_blank">npm</a>
+    <a href="https://pypi.org/project/buzur" target="_blank">PyPI</a>
+    <a href="https://github.com/SummSolutions/Buzur/blob/main/LICENSE">MIT License</a>
+  </div>
+  <div class="footer-meta">
+    v1.2.0 · 25 Phases · 372 JS Tests · 291 Python Tests · 0 Failures<br>
+    Built with assistance from Claude &amp; Grok
+  </div>
+</footer>
+
+<script>
+  function switchTab(id,btn){
+    document.querySelectorAll('.qs-tab').forEach(t=>t.classList.remove('active'));
+    document.querySelectorAll('.qs-panel').forEach(p=>p.classList.remove('active'));
+    btn.classList.add('active');
+    document.getElementById('tab-'+id).classList.add('active');
+  }
+  const obs=new IntersectionObserver(entries=>{
+    entries.forEach(e=>{if(e.isIntersecting){e.target.classList.add('visible');obs.unobserve(e.target);}});
+  },{threshold:.08,rootMargin:'0px 0px -30px 0px'});
+  document.querySelectorAll('.reveal').forEach((el,i)=>{
+    el.style.transitionDelay=(i%3)*.07+'s';
+    obs.observe(el);
+  });
+</script>
 </body>
 </html>
