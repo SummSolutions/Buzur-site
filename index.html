@@ -101,8 +101,8 @@
     .phase-status { display:inline-flex; align-items:center; gap:5px; font-family:var(--mono); font-size:.55rem; letter-spacing:.1em; text-transform:uppercase; margin-top:11px; padding:3px 8px; background:rgba(42,157,92,.07); border:1px solid rgba(42,157,92,.2); color:var(--green); border-radius:1px; }
     .status-dot { width:5px; height:5px; border-radius:50%; background:currentColor; display:inline-block; }
     .phase-new { font-family:var(--mono); font-size:.52rem; color:var(--green); background:rgba(42,157,92,.12); border:1px solid rgba(42,157,92,.3); padding:1px 6px; border-radius:1px; letter-spacing:.1em; text-transform:uppercase; margin-left:6px; vertical-align:middle; }
-    .living-card { background:var(--bg2); padding:32px 28px; position:relative; overflow:hidden; border-left:3px solid var(--green); grid-column:span 2; display:flex; align-items:center; gap:32px; }
-    @media(max-width:600px){ .living-card{grid-column:span 1;flex-direction:column;gap:16px;} }
+    .living-card { background:var(--bg2); padding:32px 28px; position:relative; overflow:hidden; border-left:3px solid var(--green); grid-column:1/-1; display:flex; align-items:center; gap:32px; }
+    @media(max-width:600px){ .living-card{flex-direction:column;gap:16px;} }
     .living-title { font-family:var(--display); font-size:1rem; font-weight:800; color:#fff; margin-bottom:6px; }
     .living-desc { font-size:.78rem; color:var(--text-dim); line-height:1.6; }
     .living-tag { display:inline-flex; align-items:center; gap:6px; font-family:var(--mono); font-size:.55rem; letter-spacing:.12em; text-transform:uppercase; margin-top:10px; color:var(--green); }
