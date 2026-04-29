@@ -235,8 +235,8 @@
 <!-- ── STAT BAR ── -->
 <div class="stat-bar">
   <div class="stat-item"><div class="stat-num">25</div><div class="stat-label">Defense Phases</div></div>
-  <div class="stat-item"><div class="stat-num">372</div><div class="stat-label">JS Tests</div></div>
-  <div class="stat-item"><div class="stat-num">291</div><div class="stat-label">Python Tests</div></div>
+  <div class="stat-item"><div class="stat-num">394</div><div class="stat-label">JS Tests</div></div>
+  <div class="stat-item"><div class="stat-num">314</div><div class="stat-label">Python Tests</div></div>
   <div class="stat-item"><div class="stat-num">0</div><div class="stat-label">Failures</div></div>
   <div class="stat-item"><div class="stat-num">2</div><div class="stat-label">Languages</div></div>
 </div>
@@ -272,7 +272,7 @@
 
       <div class="phase-card reveal"><div class="phase-num">Phase 01a / 01b</div><div class="phase-name">Input Sanitization & Pattern Scanner</div><div class="phase-desc">HTML stripping, homoglyph normalization, Base64 decode, invisible Unicode. Catches instruction overrides, persona hijacking, and ARIA injection.</div><div class="phase-status"><span class="status-dot"></span> Active</div></div>
       <div class="phase-card reveal"><div class="phase-num">Phase 02</div><div class="phase-name">Trust Tier Classification</div><div class="phase-desc">Classifies every query and assigns a trust tier. Tier 1 domain list with add_trusted_domain() for custom allowlists.</div><div class="phase-status"><span class="status-dot"></span> Active</div></div>
-      <div class="phase-card reveal"><div class="phase-num">Phase 03</div><div class="phase-name">URL Scanner</div><div class="phase-desc">TLD heuristics, homoglyph domain detection, and VirusTotal integration — 70+ engines check every URL before content is fetched.</div><div class="phase-status"><span class="status-dot"></span> Active</div></div>
+      <div class="phase-card reveal"><div class="phase-num">Phase 03</div><div class="phase-name">URL Scanner</div><div class="phase-desc">TLD heuristics, homoglyph domain detection, and VirusTotal integration — 90+ engines check every URL before content is fetched.</div><div class="phase-status"><span class="status-dot"></span> Active</div></div>
       <div class="phase-card reveal"><div class="phase-num">Phase 04</div><div class="phase-name">Memory Poisoning</div><div class="phase-desc">Detects fake prior references, false memory implanting, and history rewriting attempts targeting the model's context window.</div><div class="phase-status"><span class="status-dot"></span> Active</div></div>
       <div class="phase-card reveal"><div class="phase-num">Phase 05</div><div class="phase-name">RAG Poisoning</div><div class="phase-desc">Scans document chunks and batch inputs for poisoned retrieval content. Full scan_document() and JSON support.</div><div class="phase-status"><span class="status-dot"></span> Active</div></div>
       <div class="phase-card reveal"><div class="phase-num">Phase 06</div><div class="phase-name">MCP Tool Poisoning</div><div class="phase-desc">Inspects MCP tool definitions, parameters, and deep JSON schema traversal for injected instructions hiding in tool metadata.</div><div class="phase-status"><span class="status-dot"></span> Active</div></div>
@@ -295,23 +295,27 @@
       <div class="phase-card reveal"><div class="phase-num">Phase 23</div><div class="phase-name">Tool Shadowing</div><div class="phase-desc">Per-tool behavioral baseline tracking. Detects rug-pull attacks where a trusted tool silently changes behavior, and permission escalation attempts.</div><div class="phase-status"><span class="status-dot"></span> Active</div></div>
       <div class="phase-card reveal"><div class="phase-num">Phase 24</div><div class="phase-name">Conditional Injection</div><div class="phase-desc">Trigger-condition detection, time-delayed activation, keyword-based sleeper payloads — attacks designed to fire only under specific future conditions.</div><div class="phase-status"><span class="status-dot"></span> Active</div></div>
       <div class="phase-card reveal"><div class="phase-num">Phase 25 <span class="phase-new">NEW v8</span></div><div class="phase-name">Canister-Style Resilient Payload</div><div class="phase-desc">ICP blockchain C2 detection, credential harvesting (ANTHROPIC_API_KEY, NPM_TOKEN), worm replication patterns, known malicious blocklist. Built in direct response to CanisterSprawl (April 2026).</div><div class="phase-status"><span class="status-dot"></span> Active</div></div>
+      
+      <div class="phase-card reveal" style="border-left: 2px solid var(--green);">
+      <div class="phase-num">// living defense</div>
+      <div class="phase-name">Buzur Grows With the Threat Landscape</div>
+      <div class="phase-desc">Every phase was built in direct response to a real attack — from the invisible payload that hit Albert on day one, to CanisterSprawl, the first worm to use blockchain as censorship-resistant C2.</div>
+      <div class="living-tag" style="margin-top:11px"><span class="living-pulse"></span> Actively maintained</div>
+    </div>
 
-      <!-- Living defense statement -->
-      <div class="living-card reveal">
-        <div style="flex-shrink:0">
-          <svg width="36" height="52" viewBox="0 0 140 158" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <path d="M70 2L130 28L130 88Q130 130 70 154Q10 130 10 88L10 28Z" fill="#0a120a" stroke="#2a9d5c" stroke-width="2.8"/>
-            <path d="M70 18L117 40L117 88Q117 122 70 140Q23 122 23 88L23 40Z" fill="none" stroke="#1a6b3a" stroke-width="1.4"/>
-            <polygon points="70,71 77.8,75.5 77.8,84.5 70,89 62.2,84.5 62.2,75.5" fill="#2a9d5c" stroke="#2a9d5c" stroke-width="0.5"/>
-            <path d="M70 2L130 28L130 88Q130 130 70 154Q10 130 10 88L10 28Z" fill="none" stroke="#2a9d5c" stroke-width="2.8"/>
-          </svg>
-        </div>
-        <div>
-          <div class="living-title">Buzur grows with the threat landscape</div>
-          <div class="living-desc">Every phase in Buzur was built in direct response to a real attack — from the invisible payload that hit Albert on day one, to CanisterSprawl, the first self-propagating worm to use blockchain infrastructure as censorship-resistant C2. When new attack vectors emerge, new phases follow. Buzur is a living defense, not a static ruleset.</div>
-          <div class="living-tag"><span class="living-pulse"></span> Actively maintained · Open to contributions · New phases added as threats evolve</div>
-        </div>
-      </div>
+      <div class="phase-card reveal" style="border-left: 2px solid var(--green);">
+      <div class="phase-num">// open source</div>
+      <div class="phase-name">Open to Contributions</div>
+      <div class="phase-desc">When new attack vectors emerge, new phases follow. Every threat the community discovers becomes protection for every agent that uses Buzur. Report a pattern, submit a phase, strengthen the collective defense.</div>
+      <div class="living-tag" style="margin-top:11px"><span class="living-pulse"></span> Open to contributions</div>
+    </div>
+
+      <div class="phase-card reveal" style="border-left: 2px solid var(--green);">
+      <div class="phase-num">// collective immune system</div>
+      <div class="phase-name">New Phases Added As Threats Evolve</div>
+      <div class="phase-desc">Buzur is a living defense, not a static ruleset. As AI agents gain new capabilities and attackers find new vectors, Buzur will grow to meet them. The internet was built for humans. Buzur is being built for everyone.</div>
+      <div class="living-tag" style="margin-top:11px"><span class="living-pulse"></span> New phases as threats evolve</div>
+    </div>
 
     </div>
   </div>
@@ -342,7 +346,7 @@ result = <span class="fn">scan</span>(incoming_content)
     <span class="kw">return</span>  <span class="cm"># Threat blocked — content never reached the model</span>
 
 <span class="cm"># Run full test suite</span>
-pytest tests/test_all.py -v  <span class="cm"># 291 tests, 0 failures</span></pre>
+pytest tests/test_all.py -v  <span class="cm"># 314 tests, 0 failures</span></pre>
         <div class="qs-note">✓ Works with LangChain, AutoGen, CrewAI, and bare API calls. Python 3.10+</div>
       </div>
       <div id="tab-js" class="qs-panel">
@@ -356,7 +360,7 @@ npm install buzur
 <span class="kw">if</span> (result.skipped) <span class="kw">return</span>; <span class="cm">// Threat blocked safely</span>
 
 <span class="cm">// Run full test suite</span>
-node test.js  <span class="cm">// 372 tests, 0 failures</span></pre>
+node test.js  <span class="cm">// 394 tests, 0 failures</span></pre>
         <div class="qs-note">✓ ESM + CommonJS. Works with Vercel AI SDK, LangChain.js, and raw fetch. Node 20+</div>
       </div>
     </div>
@@ -400,7 +404,7 @@ node test.js  <span class="cm">// 372 tests, 0 failures</span></pre>
     <a href="https://github.com/SummSolutions/Buzur/blob/main/LICENSE">MIT License</a>
   </div>
   <div class="footer-meta">
-    v1.2.0 · 25 Phases · 372 JS Tests · 291 Python Tests · 0 Failures<br>
+    v1.2.0 · 25 Phases · 394 JS Tests · 314 Python Tests · 0 Failures<br>
     Built with assistance from Claude &amp; Grok
   </div>
 </footer>
